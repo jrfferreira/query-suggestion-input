@@ -4,7 +4,7 @@ export default class Node {
     this.text = props.text; // string;
     this.start = props.start; // number;
     this.end = props.end; // number;
-    this.children = props.children; // IToken[];
+    this.children = props.children || []; // IToken[];
     this.parent = props.parent; // IToken;
     this.fullText = props.fullText; // string;
     this.errors = props.errors; // TokenError[];

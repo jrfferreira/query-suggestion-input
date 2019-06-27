@@ -3,7 +3,8 @@ import SuggestionInput from "./SuggestionInput";
 
 const SYNTAX = `
 <SYNTAX>           ::= <query>
-<query>            ::= <element> "," <query> | <element>
+<query>            ::= <element> <SEPARATOR> <query> | <element>
+<SEPARATOR>        ::= ',' ' ' | ','
 <element>          ::=  <repetition> "|" <element> | <repetition>
 <repetition>       ::= <simple> <repeat_operator> | <simple>
 <repeat_operator>  ::= "+" | "*" | "?"
@@ -32,17 +33,31 @@ class App extends React.Component {
     };
   }
 
-  onChange = field => ({ target }) => {
+  onChange = field => val => {
     this.setState({
-      [field]: target.value
+      [field]: val
     });
   };
 
-  onChangeNode = node => {
+  fetchSuggestions = node => {
     this.setState({
       currentNode: node,
       currentEvent: node.findParentByType("event").findChildByType("event_name")
         .text
+    });
+
+    const { text, type } = node;
+    return new Promise((resolve, reject) => {
+      let response;
+      if (
+        ["event_name", "screen_name", "prop_val", "prop_name"].includes(type)
+      ) {
+        response = [...Array(5)]
+          .map(_ => parseInt(Math.random() * 1000))
+          .concat(text);
+      }
+
+      setTimeout(() => resolve(response), 1000);
     });
   };
 
@@ -60,23 +75,15 @@ class App extends React.Component {
           syntax={SYNTAX}
           value={this.state.sentence}
           onChange={this.onChange("sentence")}
-          onChangeNode={this.onChangeNode}
+          fetchSuggestions={this.fetchSuggestions}
         />
+        <hr />
         <br />
         Current node: {this.state.currentNode &&
           this.state.currentNode.type}:{" "}
         {this.state.currentNode && this.state.currentNode.text}
         <br />
         Current event: {this.state.currentEvent}
-        <br />
-        Parent:{" "}
-        {this.state.currentNode &&
-          this.state.currentNode.parent &&
-          this.state.currentNode.parent.type}
-        :{" "}
-        {this.state.currentNode &&
-          this.state.currentNode.parent &&
-          this.state.currentNode.parent.text}
       </div>
     );
   }
