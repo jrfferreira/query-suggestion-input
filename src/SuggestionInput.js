@@ -2,6 +2,8 @@ import React from "react";
 import PropTypes from "prop-types";
 import { Grammars } from "ebnf";
 
+import "./SuggestionInput.css";
+
 import SuggestionList from "./SuggestionList";
 import Node from "./Node";
 
@@ -23,6 +25,8 @@ export default class SuggestionInput extends React.Component {
 
   state = {
     active: 0,
+    showSuggestions: false,
+    suggestions: [],
     output: null
   };
 
@@ -66,6 +70,7 @@ export default class SuggestionInput extends React.Component {
         cursorPosition,
         output,
         currentNode,
+        showSuggestions: silent ? false : this.state.showSuggestions,
         suggestions: [],
         active: 0
       });
@@ -76,6 +81,7 @@ export default class SuggestionInput extends React.Component {
 
   checkForSuggestions = (currentNode = this.state.currentNode) => {
     this.setState({
+      showSuggestions: true,
       fetchingSuggestions: true
     });
 
@@ -93,6 +99,7 @@ export default class SuggestionInput extends React.Component {
           .catch(_ => {
             this.setState({
               suggestions: [],
+              showSuggestions: false,
               fetchingSuggestions: false
             });
           }),
@@ -113,7 +120,17 @@ export default class SuggestionInput extends React.Component {
 
   // Handlers
 
-  onClose = () => {};
+  onClose = () => {
+    return;
+    clearTimeout(this.fetcher);
+
+    this.setState({
+      fetchingSuggestions: false,
+      showSuggestions: false,
+      suggestions: [],
+      active: 0
+    });
+  };
 
   onPressEnter = () => {
     this.onSelect(this.state.suggestions[this.state.active]);
@@ -128,7 +145,7 @@ export default class SuggestionInput extends React.Component {
     e.preventDefault();
   };
 
-  onChange = e => {
+  onChange = _ => {
     this.updateReferences();
     if (this.props.onChange) this.props.onChange(this.input.value);
   };
@@ -147,13 +164,17 @@ export default class SuggestionInput extends React.Component {
         this.onPressEnter();
         break;
       case COMMANDS.ESC:
-        this.escapeHandler();
+        this.onClose();
         break;
     }
   };
 
-  onMouseUp = e => {
+  onMouseUp = _ => {
     this.updateReferences();
+  };
+
+  onBlur = _ => {
+    this.onClose();
   };
 
   onSelect = newValue => {
@@ -178,17 +199,18 @@ export default class SuggestionInput extends React.Component {
   // Renders
 
   renderSuggestions = () => {
-    const { suggestions, fetchingSuggestions } = this.state;
-    const showSuggestions =
-      !fetchingSuggestions && suggestions && suggestions.length;
+    const { suggestions, showSuggestions } = this.state;
 
-    if (!showSuggestions) return;
+    if (!showSuggestions) {
+      return;
+    }
 
     return (
       <SuggestionList
         suggestions={suggestions}
+        loading={this.state.fetchingSuggestions}
         active={this.state.active}
-        selected={this.state.currentNode.text}
+        selected={this.state.currentNode ? this.state.currentNode.text : null}
         onSelect={this.onSelect}
       />
     );
@@ -196,8 +218,6 @@ export default class SuggestionInput extends React.Component {
 
   render() {
     const {
-      onMouseUp,
-      onKeyUp,
       onChange,
       syntax,
       onChangeNode,
@@ -206,20 +226,21 @@ export default class SuggestionInput extends React.Component {
     } = this.props;
 
     return (
-      <React.Fragment>
+      <div className="query-suggestion">
         <input
+          className={this.props.className + " query-suggestion-input"}
           {...props}
           ref={node => {
             this.input = node;
           }}
+          style={{ width: "300px" }}
+          onBlur={this.onBlur}
           onMouseUp={this.onMouseUp}
           onKeyDown={this.onKeyDown}
           onChange={this.onChange}
         />
-        <br />
-        {this.state.fetchingSuggestions ? "Loading..." : ""}
         {this.renderSuggestions()}
-      </React.Fragment>
+      </div>
     );
   }
 }

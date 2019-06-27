@@ -1,0 +1,19 @@
+<SYNTAX>           ::= <query>
+<query>            ::= <element> <SEPARATOR> <query> | <element>
+<SEPARATOR>        ::= ',' ' ' | ','
+<element>          ::=  <repetition> "|" <element> | <repetition>
+<repetition>       ::= <simple> <repeat_operator> | <simple>
+<repeat_operator>  ::= "+" | "*" | "?"
+<simple>           ::= <event> | <group>
+<group>            ::= "(" <element> ")"
+<event>            ::= <event_name> ":" <screen_name> <prop_list_scope> | <event_name> ":" <screen_name> | <event_name> ":" | <event_name> <prop_list_scope> | <event_name>
+<event_name>       ::= <DIGITS> | <any> | ""
+<screen_name>      ::= <DIGITS> | ""
+<prop_list_scope>  ::= "{" <prop_list> "}" | "{" <prop_list> | "{" "}" | "{"
+<prop_list>        ::= <prop_tuple_scope> "," <prop_list> | <prop_tuple_scope>
+<prop_tuple_scope> ::= <prop_name> "=" <prop_val> | <prop_name> "=" | <prop_name>
+<prop_name>        ::= <DIGITS> | ""
+<prop_val>         ::= <DIGITS> | ""
+<DIGIT>            ::= "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "0"
+<DIGITS>           ::= <DIGIT> <DIGITS> | <DIGIT>
+<any>              ::= "."

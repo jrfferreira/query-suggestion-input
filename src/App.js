@@ -1,4 +1,6 @@
 import React from "react";
+import "./App.css";
+
 import SuggestionInput from "./SuggestionInput";
 
 const SYNTAX = `
